@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼音大转盘小游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        h1 {
+            color: #4a6fa5;
+            margin-bottom: 20px;
+            font-size: 32px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 40px;
+        }
+        
+        .wheel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 0 6px #fff, 0 0 15px rgba(0, 0, 0, 0.2);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.21, 0.99);
+        }
+        
+        .ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+        
+        .initials-ring {
+            background: linear-gradient(90deg, #fff6e9 0%, #ffebcc 100%);
+            clip-path: circle(49% at 50% 50%);
+            z-index: 1;
+        }
+        
+        .finals-ring {
+            background: linear-gradient(90deg, #e6f7ff 0%, #cceeff 100%);
+            clip-path: circle(32.5% at 50% 50%);
+            z-index: 2;
+        }
+        
+        .tones-ring {
+            background: linear-gradient(90deg, #f2e6ff 0%, #e6ccff 100%);
+            clip-path: circle(20% at 50% 50%);
+            z-index: 3;
+        }
+        
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15%;
+            height: 15%;
+            background: #fff;
+            border-radius: 50%;
+            z-index: 4;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #4a6fa5;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 40px;
+            z-index: 10;
+        }
+        
+        .pointer::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 20px solid #ff6b6b;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result h2 {
+            color: #4a6fa5;
+            margin-bottom: 15px;
+        }
+        
+        .pinyin-display {
+            font-size: 42px;
+            font-weight: bold;
+            color: #333;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .button {
+            margin-top: 25px;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #4a6fa5 0%, #2a4a76 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .button:active {
+            transform: translateY(1px);
+        }
+        
+        .item {
+            position: absolute;
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .initial-item {
+            font-size: 14px;
+            width: 30px;
+            height: 20px;
+        }
+        
+        .final-item {
+            font-size: 12px;
+            width: 30px;
+            height: 20px;
+        }
+        
+        .tone-item {
+            font-size: 16px;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .instructions h3 {
+            color: #4a6fa5;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            line-height: 1.6;
+        }
+        
+        .invalid {
+            color: #ff6b6b;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>拼音大转盘</h1>
+        <p class="description">点击开始按钮，转盘将旋转并随机选择声母、韵母和声调，组合成拼音</p>
+        
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel">
+                <div class="ring initials-ring" id="initials-ring"></div>
+                <div class="ring finals-ring" id="finals-ring"></div>
+                <div class="ring tones-ring" id="tones-ring"></div>
+                <div class="center-circle">拼音转盘</div>
+            </div>
+        </div>
+        
+        <button class="button" id="spin-btn">开始旋转</button>
+        
+        <div class="result">
+            <h2>拼读结果</h2>
+            <div class="pinyin-display" id="pinyin-result">等待旋转...</div>
+        </div>
+        
+        <div class="instructions">
+            <h3>游戏说明</h3>
+            <ul>
+                <li>转盘由三个环组成：声母环（浅黄色）、韵母环（浅蓝色）和声调环（浅紫色）</li>
+                <li>点击"开始旋转"按钮，转盘将开始旋转并随机停止</li>
+                <li>系统会自动过滤无效的拼音组合</li>
+                <li>生成的拼音将显示在下方的拼读结果区域</li>
+                <li>无效组合将显示为<span class="invalid">无效拼音</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 定义数据
+            const initials = ['b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'zh', 'ch', 'sh', 'r', 'z', 'c', 's'];
+            const finals = ['a', 'o', 'e', 'i', 'u', 'ü', 'ai', 'ei', 'ui', 'ao', 'ou', 'iu', 'ie', 'üe', 'er', 'an', 'en', 'in', 'un', 'ün', 'ang', 'eng', 'ing', 'ong'];
+            const tones = ['ˉ', 'ˊ', 'ˇ', 'ˋ'];
+            
+            // 无效拼音组合
+            const invalidCombinations = [
+                // j,q,x与u相拼时要去掉两点，所以与ü相拼是有效的
+                'fu', 'tu', 'vu', 'fo', 'io', 'eo', // 无效组合
+                'bang', 'pong', 'mio', 'fiu', 'duo', // 更多无效组合
+                'tia', 'nun', 'lui', 'gua', 'kua', // 示例无效组合
+                'hong', 'jia', 'qia', 'xia', 'zhuo', // 示例无效组合
+                'chuo', 'shuo', 'ruo', 'zua', 'cua', // 示例无效组合
+                'sua', 'bui', 'pui', 'mui', 'fei'  // 示例无效组合
+            ];
+            
+            const wheel = document.querySelector('.wheel');
+            const spinBtn = document.getElementById('spin-btn');
+            const pinyinResult = document.getElementById('pinyin-result');
+            
+            // 创建转盘项
+            function createWheelItems() {
+                const initialsRing = document.getElementById('initials-ring');
+                const finalsRing = document.getElementById('finals-ring');
+                const tonesRing = document.getElementById('tones-ring');
+                
+                // 创建声母项
+                createRingItems(initialsRing, initials, 'initial-item', 0.815);
+                
+                // 创建韵母项
+                createRingItems(finalsRing, finals, 'final-item', 0.525);
+                
+                // 创建声调项
+                createRingItems(tonesRing, tones, 'tone-item', 0.3);
+            }
+            
+            // 创建环形项
+            function createRingItems(ring, items, className, radiusFactor) {
+                const center = 200; // 转盘中心
+                const radius = center * radiusFactor;
+                
+                items.forEach((item, index) => {
+                    const angle = (index / items.length) * 2 * Math.PI;
+                    const x = center + radius * Math.cos(angle);
+                    const y = center + radius * Math.sin(angle);
+                    
+                    const itemElement = document.createElement('div');
+                    itemElement.className = `item ${className}`;
+                    itemElement.textContent = item;
+                    itemElement.style.left = `${x - 15}px`;
+                    itemElement.style.top = `${y - 10}px`;
+                    itemElement.style.transform = `rotate(${angle + Math.PI/2}rad)`;
+                    
+                    ring.appendChild(itemElement);
+                });
+            }
+            
+            // 旋转转盘
+            function spinWheel() {
+                // 随机旋转角度
+                const rotations = 5 + Math.random() * 5; // 5-10圈
+                const degrees = rotations * 360;
+                
+                // 应用旋转
+                wheel.style.transform = `rotate(${degrees}deg)`;
+                
+                // 禁用按钮
+                spinBtn.disabled = true;
+                spinBtn.textContent = '旋转中...';
+                
+                // 旋转结束后显示结果
+                setTimeout(() => {
+                    const selectedInitial = getRandomItem(initials);
+                    const selectedFinal = getRandomItem(finals);
+                    const selectedTone = getRandomItem(tones);
+                    
+                    let pinyin = selectedInitial + selectedFinal;
+                    
+                    // 检查是否为无效组合
+                    if (isInvalidCombination(pinyin)) {
+                        pinyinResult.innerHTML = '<span class="invalid">无效拼音</span>';
+                    } else {
+                        // 添加声调
+                        pinyin = addToneToPinyin(pinyin, selectedTone);
+                        pinyinResult.textContent = pinyin;
+                    }
+                    
+                    // 启用按钮
+                    spinBtn.disabled = false;
+                    spinBtn.textContent = '开始旋转';
+                }, 4000);
+            }
+            
+            // 检查是否为无效拼音组合
+            function isInvalidCombination(pinyin) {
+                return invalidCombinations.includes(pinyin);
+            }
+            
+            // 获取随机项
+            function getRandomItem(array) {
+                return array[Math.floor(Math.random() * array.length)];
+            }
+            
+            // 添加声调到拼音
+            function addToneToPinyin(pinyin, tone) {
+                // 定义带声调的韵母映射
+                const toneMappings = {
+                    'a': {'ˉ': 'ā', 'ˊ': 'á', 'ˇ': 'ǎ', 'ˋ': 'à'},
+                    'o': {'ˉ': 'ō', 'ˊ': 'ó', 'ˇ': 'ǒ', 'ˋ': 'ò'},
+                    'e': {'ˉ': 'ē', 'ˊ': 'é', 'ˇ': 'ě', 'ˋ': 'è'},
+                    'i': {'ˉ': 'ī', 'ˊ': 'í', 'ˇ': 'ǐ', 'ˋ': 'ì'},
+                    'u': {'ˉ': 'ū', 'ˊ': 'ú', 'ˇ': 'ǔ', 'ˋ': 'ù'},
+                    'ü': {'ˉ': 'ǖ', 'ˊ': 'ǘ', 'ˇ': 'ǚ', 'ˋ': 'ǜ'},
+                    'v': {'ˉ': 'ǖ', 'ˊ': 'ǘ', 'ˇ': 'ǚ', 'ˋ': 'ǜ'}
+                };
+                
+                // 优先处理复韵母
+                if (pinyin.includes('iu')) {
+                    return pinyin.replace('iu', tone === 'ˉ' ? 'iū' : 
+                                         tone === 'ˊ' ? 'iú' : 
+                                         tone === 'ˇ' ? 'iǔ' : 'iù');
+                } else if (pinyin.includes('ui')) {
+                    return pinyin.replace('ui', tone === 'ˉ' ? 'uī' : 
+                                         tone === 'ˊ' ? 'uí' : 
+                                         tone === 'ˇ' ? 'uǐ' : 'uì');
+                }
+                
+                // 处理单韵母
+                for (let i = pinyin.length - 1; i >= 0; i--) {
+                    const char = pinyin[i];
+                    if (toneMappings[char]) {
+                        const tonedChar = toneMappings[char][tone];
+                        return pinyin.substring(0, i) + tonedChar + pinyin.substring(i + 1);
+                    }
+                }
+                
+                // 如果没有找到可添加声调的字母，直接附加声调
+                return pinyin + tone;
+            }
+            
+            // 初始化转盘
+            createWheelItems();
+            
+            // 添加事件监听器
+            spinBtn.addEventListener('click', spinWheel);
+        });
+    </script>
+</body>
+</html>
